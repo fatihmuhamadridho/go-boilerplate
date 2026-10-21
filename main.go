@@ -1,23 +1,27 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+
+	handler "example.com/learn-golang/api"
 )
 
 func main() {
-    mux := http.NewServeMux()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/health", handler.Handler)
 
-    mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json")
+	port := os.Getenv("PORT")
 
-        json.NewEncoder(w).Encode(map[string]string{
-            "status": "ok",
-            "message": "Golang API is running",
-        })
-    })
+	if port == "" {
+		port = "8080"
+	}
 
-    log.Println("Server running on :8080")
-    log.Fatal(http.ListenAndServe(":8080", mux))
+	addr := ":" + port
+	log.Printf("Server running on %s", addr)
+    
+	if err := http.ListenAndServe(addr, mux); err != nil {
+		log.Fatal(err)
+	}
 }
